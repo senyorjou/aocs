@@ -1,78 +1,128 @@
 const std = @import("std");
-// const buffIter = @import("buff-iter.zig");
+const ascii = std.ascii;
+const testing = std.testing;
+const buffIter = @import("buff-iter.zig");
 
 const Part = struct {
+    line: u32,
     begin: u32,
     end: u32,
     val: u32,
 };
 
-fn parseLine(line: []const u8) Part {
-    var nums = std.mem.splitScalar(u8, line, '.');
-    var index: u8 = 0;
-    while (nums.next()) |num| : (index += 1) {
-        if (num.len == 0) {
-            continue;
+const Value = struct {
+    line: u32,
+    row: u32,
+    value: u32,
+    used: bool = false,
+};
 
+const Symbol = struct {
+    line: u32,
+    row: u32,
+};
 
-        }
-        // const index = std.mem.indexOf(u8, line, num).?;
-        // const index_32 = @as(u32, @intCast(index));
+const Map = struct {
+    line: u32,
+    row: u32,
+    part: Part,
+};
 
-        const foo: u32 = try std.fmt.parseInt(u32, num, 10);
-        std.debug.print("VAL: {s} {d} {?d}\n", .{ num, num.len, foo });
-
-        const part = Part{ .begin = index, .end = index + @as(u32, @intCast(num.len)) - 1, .val = 0 };
-
-        std.debug.print("Part: {}\n", .{part});
+fn createValue(line: u32, begin: u32, end: u32, value: u32) void {
+    var index = begin;
+    while (index <= end) : (index += 1) {
+        const val = Value{ .line = line, .row = index, .value = value };
+        _ = val; // autofix
     }
-
-    return Part{ .begin = 0, .end = 0, .val = 0 };
 }
 
-fn runLine(line: []const u8) u8 {
-    var number: u32 = 0;
-    var exp: u32 = 1;
-    var in_number: bool = false;
-
-    for (line, 0..) |char, i| {
-        if (std.ascii.isDigit(char)) {
-            _ = i;
-            in_number = true;
-            number = number * exp + (char - '0');
-            exp = 10;
-            // std.debug.print("Found: {d} at {d}  ", .{ number, i });
+fn parseLine(line_num: u32, line: []const u8, parts: *std.ArrayList(Part), symbols: *std.ArrayList(Symbol)) !void {
+    var num: u32 = 0;
+    var num_len: u8 = 0;
+    for (line, 0..) |char, index| {
+        const local_index: u32 = @intCast(index);
+        if (ascii.isDigit(char)) {
+            num = num * 10 + (char - '0');
+            num_len += 1;
         } else {
-            if (in_number) {
-                in_number = false;
-                std.debug.print("Found: {d}\n", .{number});
-                number = 0;
-                exp = 1;
+            // close number
+            if (num_len > 0) {
+                const begin = local_index - num_len;
+                const end = local_index - 1;
+
+                const part = Part{ .line = line_num, .begin = begin, .end = end, .val = num };
+                try parts.append(part);
+                num = 0;
+                num_len = 0;
+            }
+            if (char == '.') {
+                continue;
+            } else {
+                try symbols.append(Symbol{ .line = line_num, .row = local_index });
             }
         }
     }
+}
 
-    return 0;
+fn parseInput() !void {
+    var iter = try buffIter.iterLines("./data/03-in.txt");
+    defer iter.deinit();
+
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+
+    var parts = std.ArrayList(Part).init(allocator);
+    var symbols = std.ArrayList(Symbol).init(allocator);
+    defer parts.deinit();
+    defer symbols.deinit();
+
+    var current_line: u32 = 0;
+
+    while (try iter.next()) |line| : (current_line += 1) {
+        try parseLine(current_line, line, &parts, &symbols);
+    }
+    // std.debug.print("PARTS: {any}", .{symbols.items});
+    // for (symbols.items) |sym| {
+    //     std.debug.print("PART: {any},{any}", .{ sym.row, sym.line });
+    // }
+    partsToHash(&parts);
+}
+
+fn partsToHash(parts: *std.ArrayList(Part)) void {
+    // var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    // const allocator = gpa.allocator();
+    // var map = std.AutoHashMap(Map, Part).init(allocator);
+    for (parts.items) |part| {
+        // try map.put(key: K, value: V)
+        if (part.val == 128) {
+            std.debug.print("Found {any}", .{part});
+        }
+    }
 }
 
 pub fn main() !void {
     std.debug.print("P1, \n", .{});
     std.debug.print("P2, \n", .{});
+    try parseInput();
 }
 
 test "test parseLine" {
-    const line = ".....489............................152....503.........................180......200.........147.......13.......................239..........";
+    const allocator = testing.allocator;
+    var parts = std.ArrayList(Part).init(allocator);
+    var symbols = std.ArrayList(Symbol).init(allocator);
+    defer parts.deinit();
+    defer symbols.deinit();
 
-    const expected = parseLine(line);
-    const actual = Part{ .begin = 0, .end = 0, .val = 0 };
-    try std.testing.expectEqual(expected, actual);
-}
+    //                             012345678901234
+    const line = ".....489..*.152...";
 
-test "test runLine" {
-    const line = ".....489............................152....503.........................180......200.........147.......13.......................239..........";
+    const partsExpected = [_]Part{ Part{ .line = 0, .begin = 5, .end = 7, .val = 489 }, Part{ .line = 0, .begin = 12, .end = 14, .val = 152 } };
+    const symbolsExpected = [_]Symbol{
+        Symbol{ .line = 0, .row = 10 },
+    };
 
-    const expected = runLine(line);
-    const actual: u8 = 0;
+    try parseLine(0, line, &parts, &symbols);
 
-    try std.testing.expectEqual(expected, actual);
+    try testing.expectEqualSlices(Part, &partsExpected, parts.items);
+    try testing.expectEqualSlices(Symbol, &symbolsExpected, symbols.items);
 }
