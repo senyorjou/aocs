@@ -49,7 +49,7 @@ const isValidSet = (set: CubeSet, reference: CubeSet): boolean =>
   set.blue <= reference.blue &&
   set.green <= reference.green
 
-const isValidGame = (game: Game, reference: CubeSet): boolean =>
+const isValidGame = (reference: CubeSet, game: Game): boolean =>
   game.sets.every((set) => isValidSet(set, reference))
 
 const getMaxCubeSet = (game: Game): CubeSet =>
@@ -65,21 +65,27 @@ const getMaxCubeSet = (game: Game): CubeSet =>
 const cubeSetValue = (cubeSet: CubeSet): number =>
   cubeSet.green * cubeSet.red * cubeSet.blue
 
+const parsedLines = lines.map(parseLine)
+
 const reference: CubeSet = {
   red: 12,
   green: 13,
   blue: 14,
 }
 
-const parsedLines = lines.map(parseLine)
+const isValidGamePartial =
+  (reference: CubeSet) =>
+  (game: Game): boolean =>
+    isValidGame(reference, game)
+
+const validateGames = isValidGamePartial(reference)
 
 const P1 = parsedLines
-  .filter((game) => isValidGame(game, reference))
-  .map((game) => game.id)
+  .filter(validateGames)
+  .map(({ id }) => id)
   .sum()
 
 const P2 = parsedLines.map(getMaxCubeSet).map(cubeSetValue).sum()
 
 console.log(dim('P1:'), inverse(bold(green(`${P1}`))))
-
 console.log(dim('P2:'), inverse(bold(green(`${P2}`))))
