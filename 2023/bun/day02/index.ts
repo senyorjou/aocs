@@ -4,7 +4,6 @@ import '../helpers/array-extensions'
 import { createReader } from '../helpers'
 
 const readDay = createReader(import.meta.dir)
-// const contents = await readDay('sample.txt')
 const contents = await readDay()
 
 const lines = contents.split('\n').filter(Boolean)
