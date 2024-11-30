@@ -44,13 +44,28 @@ const parseLine = (line: string): Game => {
   }
 }
 
-const isValidSet = (set: CubeSet, reference: CubeSet): boolean =>
-  set.red <= reference.red &&
-  set.blue <= reference.blue &&
-  set.green <= reference.green
+const reference: CubeSet = {
+  red: 12,
+  green: 13,
+  blue: 14,
+}
 
-const isValidGame = (reference: CubeSet, game: Game): boolean =>
-  game.sets.every((set) => isValidSet(set, reference))
+const isValidSetPartial =
+  (reference: CubeSet) =>
+  (set: CubeSet): boolean =>
+    set.red <= reference.red &&
+    set.blue <= reference.blue &&
+    set.green <= reference.green
+
+const validateSet = isValidSetPartial(reference)
+const isValidGame = (game: Game): boolean => game.sets.every(validateSet)
+
+const parsedLines = lines.map(parseLine)
+
+const P1 = parsedLines
+  .filter(isValidGame)
+  .map(({ id }) => id)
+  .sum()
 
 const getMaxCubeSet = (game: Game): CubeSet =>
   game.sets.reduce(
@@ -62,28 +77,8 @@ const getMaxCubeSet = (game: Game): CubeSet =>
     { red: 0, blue: 0, green: 0 },
   )
 
-const cubeSetValue = (cubeSet: CubeSet): number =>
-  cubeSet.green * cubeSet.red * cubeSet.blue
-
-const parsedLines = lines.map(parseLine)
-
-const reference: CubeSet = {
-  red: 12,
-  green: 13,
-  blue: 14,
-}
-
-const isValidGamePartial =
-  (reference: CubeSet) =>
-  (game: Game): boolean =>
-    isValidGame(reference, game)
-
-const validateGames = isValidGamePartial(reference)
-
-const P1 = parsedLines
-  .filter(validateGames)
-  .map(({ id }) => id)
-  .sum()
+const cubeSetValue = ({ red, green, blue }: CubeSet): number =>
+  red * green * blue
 
 const P2 = parsedLines.map(getMaxCubeSet).map(cubeSetValue).sum()
 
