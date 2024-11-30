@@ -1,4 +1,4 @@
-import { bold, dim, green, inverse, red } from 'yoctocolors'
+import { bold, dim, green, inverse } from 'yoctocolors'
 
 import '../helpers/array-extensions'
 import { createReader } from '../helpers'
@@ -8,10 +8,12 @@ const contents = await readDay()
 
 const lines = contents.split('\n').filter(Boolean)
 
+// types
 type CubeColor = 'red' | 'blue' | 'green'
 type CubeSet = Record<CubeColor, number>
 type Game = { id: number; sets: Cubeset[] }
 
+// parsing
 function parseCubeSet(set: string): CubeSet {
   const result: CubeSet = {
     red: 0,
@@ -44,6 +46,9 @@ const parseLine = (line: string): Game => {
   }
 }
 
+const parsedLines = lines.map(parseLine)
+
+// P1
 const reference: CubeSet = {
   red: 12,
   green: 13,
@@ -60,13 +65,12 @@ const isValidSetPartial =
 const validateSet = isValidSetPartial(reference)
 const isValidGame = (game: Game): boolean => game.sets.every(validateSet)
 
-const parsedLines = lines.map(parseLine)
-
 const P1 = parsedLines
   .filter(isValidGame)
   .map(({ id }) => id)
   .sum()
 
+// P2
 const getMaxCubeSet = (game: Game): CubeSet =>
   game.sets.reduce(
     (max, current) => ({
