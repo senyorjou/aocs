@@ -1,4 +1,4 @@
-import { bold, dim, green, inverse, red } from 'yoctocolors'
+import { bold, dim, green, inverse } from 'yoctocolors'
 
 import '../helpers/array-extensions'
 import { createReader } from '../helpers'
@@ -29,8 +29,8 @@ const calculateRelevance = (left: number[], right: number[]): number[] =>
 
 const [leftElements, rightElements] = extractAndSort(pairs)
 
-const P1 = calculateDistances(leftElements, rightElements).sum()
+export const P1 = calculateDistances(leftElements, rightElements).sum()
 console.log(dim('P1:'), inverse(bold(green(`${P1}`))))
 
-const P2 = calculateRelevance(leftElements, rightElements).sum()
+export const P2 = calculateRelevance(leftElements, rightElements).sum()
 console.log(dim('P2:'), inverse(bold(green(`${P2}`))))

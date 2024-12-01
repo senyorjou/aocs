@@ -1,4 +1,4 @@
-# bun-aoc-2023
+# bun-aoc-2024
 
 To install dependencies:
 
