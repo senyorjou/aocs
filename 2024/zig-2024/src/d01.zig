@@ -1,13 +1,13 @@
 const std = @import("std");
+const types = @import("types.zig");
 const buffIter = @import("buff-iter.zig");
-
 
 fn calculateDistance(lefts: []const u32, rights: []const u32) u32 {
     var distance: u32 = 0;
     for (lefts, 0..) |left_value, i| {
         const right_value = rights[i];
-        const diff2 = @abs(@as(i64, left_value) - @as(i64, right_value));
-        distance += @intCast(diff2);
+        const diff = @abs(@as(i64, left_value) - @as(i64, right_value));
+        distance += @intCast(diff);
     }
     return distance;
 }
@@ -21,12 +21,13 @@ fn calculateRelevance(lefts: []const u32, rights: []const u32) u32 {
                 count += 1;
             }
         }
+
         relevance += curr_left * count;
     }
     return relevance;
 }
 
-pub fn main() !void {
+pub fn solve() !types.Solution {
     var iter = try buffIter.iterLines("./data/01-input.txt");
     defer iter.deinit();
 
@@ -46,9 +47,12 @@ pub fn main() !void {
             try rights.append(right_value);
         }
     }
+
     std.mem.sort(u32, lefts.items, {}, std.sort.asc(u32));
     std.mem.sort(u32, rights.items, {}, std.sort.asc(u32));
 
-    std.debug.print("P1: {d}\n", .{calculateDistance(lefts.items, rights.items)});
-    std.debug.print("P2: {d}\n", .{calculateRelevance(lefts.items, rights.items)});
+    return .{
+        .part1 = .{ .number = calculateDistance(lefts.items, rights.items) },
+        .part2 = .{ .number = calculateRelevance(lefts.items, rights.items) },
+    };
 }
