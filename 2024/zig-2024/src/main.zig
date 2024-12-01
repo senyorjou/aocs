@@ -1,8 +1,11 @@
 const std = @import("std");
+
+const types = @import("types.zig");
+
 const d01 = @import("d01.zig");
 
 
-fn printSolution(day: u8, result: anytype) void {
+fn printSolution(day: u8, result: types.Solution) void {
     std.debug.print("Day {d}:\n", .{day});
     switch (result.part1) {
         .number => |n| std.debug.print("  P1: {d}\n", .{n}),
