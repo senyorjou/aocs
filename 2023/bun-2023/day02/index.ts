@@ -11,7 +11,7 @@ const lines = contents.split('\n').filter(Boolean)
 // types
 type CubeColor = 'red' | 'blue' | 'green'
 type CubeSet = Record<CubeColor, number>
-type Game = { id: number; sets: Cubeset[] }
+type Game = { id: number; sets: CubeSet[] }
 
 // parsing
 function parseCubeSet(set: string): CubeSet {
