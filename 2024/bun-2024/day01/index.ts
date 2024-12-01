@@ -30,7 +30,5 @@ const calculateRelevance = (left: number[], right: number[]): number[] =>
 const [leftElements, rightElements] = extractAndSort(pairs)
 
 export const P1 = calculateDistances(leftElements, rightElements).sum()
-console.log(dim('P1:'), inverse(bold(green(`${P1}`))))
 
 export const P2 = calculateRelevance(leftElements, rightElements).sum()
-console.log(dim('P2:'), inverse(bold(green(`${P2}`))))
