@@ -1,8 +1,8 @@
-import { blue, bold, dim, green, inverse, red } from 'yoctocolors'
+import { bold, dim, green, inverse, red } from 'yoctocolors'
 
 const runDay = async (day: string) => {
   try {
-    const modulePath = await import.meta.resolve(`./day${day}/index.ts`)
+    const modulePath = import.meta.resolve(`./day${day}/index.ts`)
     const dayModule = await import(modulePath)
 
     console.log(dim(`Day ${day} P1:`), inverse(bold(green(`${dayModule.P1}`))))
@@ -26,6 +26,7 @@ const main = async () => {
     await runDay(day)
   } else {
     await runDay('01')
+    await runDay('02')
   }
 }
 
