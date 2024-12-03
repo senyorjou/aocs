@@ -3,7 +3,7 @@ const std = @import("std");
 const types = @import("types.zig");
 
 const d01 = @import("d01.zig");
-
+const d02 = @import("d02.zig");
 
 fn printSolution(day: u8, result: types.Solution) void {
     std.debug.print("Day {d}:\n", .{day});
@@ -22,4 +22,5 @@ pub fn main() !void {
     std.debug.print("--------------\n", .{});
 
     printSolution(1, try d01.solve());
+    printSolution(1, try d02.solve());
 }

@@ -5,9 +5,6 @@ import { createReader } from '../helpers'
 
 const readDay = createReader(import.meta.dir)
 // const contents = await readDay('sample.txt')
-const contents = await readDay()
-
-const lines = contents.split('\n').filter(Boolean)
 
 const parseLine = (line: string): number[] => line.split(' ').map(Number)
 
@@ -28,7 +25,7 @@ const isValidList = (numbers: number[]): boolean => {
 const isAlmostValidList = (numbers: number[]): boolean =>
   numbers.some((_, i) => isValidList(numbers.filter((_, index) => index !== i)))
 
-const numbers = lines.map(parseLine)
+const numbers = (await readDay()).split('\n').filter(Boolean).map(parseLine)
 
 const validLists = numbers.map(isValidList).filter(Boolean).length
 const almostValidLists = numbers.map(isAlmostValidList).filter(Boolean).length
