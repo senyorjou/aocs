@@ -28,6 +28,7 @@ const main = async () => {
     await runDay('01')
     await runDay('02')
     await runDay('03')
+    await runDay('04')
   }
 }
 

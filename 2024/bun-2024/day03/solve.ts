@@ -12,7 +12,7 @@ const parseSimple = (line: string) => {
   return matches.map((match) => [match[1], match[2]])
 }
 
-const parseComplex = (line: string): lineItem[] => {
+const parseComplex = (line: string): LineItem[] => {
   const matches = Array.from(
     line.matchAll(/mul\((\d+),(\d+)\)|(?:don't|do)\(\)/g),
   )
