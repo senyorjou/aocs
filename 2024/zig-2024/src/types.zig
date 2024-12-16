@@ -1,5 +1,5 @@
 pub const Answer = union(enum) {
-    number: u32,
+    number: u64,
     string: []const u8,
 };
 
