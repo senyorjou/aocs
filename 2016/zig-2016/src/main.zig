@@ -3,6 +3,7 @@ const types = @import("types.zig");
 
 const d01 = @import("day01.zig");
 const d02 = @import("day02.zig");
+const d03 = @import("day03.zig");
 
 fn printSolution(day: u8, result: types.Solution) void {
     std.debug.print("Day {d}:\n", .{day});
@@ -17,9 +18,22 @@ fn printSolution(day: u8, result: types.Solution) void {
 }
 
 pub fn main() !void {
+    const alloc = std.heap.page_allocator;
     std.debug.print("All your {s} are belong to us.\n", .{"codebase"});
     printSolution(1, try d01.solve());
-    printSolution(2, try d02.solve());
+
+    const d02_solution = try d02.solve();
+    defer {
+        if (d02_solution.part1 == .string) {
+            alloc.free(d02_solution.part1.string);
+        }
+        if (d02_solution.part2 == .string) {
+            alloc.free(d02_solution.part2.string);
+        }
+    }
+    printSolution(2, d02_solution);
+
+    printSolution(3, try d03.solve());
 }
 
 test "simple test" {

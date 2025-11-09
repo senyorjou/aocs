@@ -63,20 +63,31 @@ const keypad_5x5 = [_][]const u8{
     ".....",
 };
 
-fn readData(alloc: std.mem.Allocator) !std.ArrayList([]u8) {
-    const file = try std.fs.cwd().openFile("data/temp.txt", .{});
+// Diamond-shaped keypad definition
+const keypad_diamond = [_][]const u8{
+    ".......",
+    "...1...",
+    "..234..",
+    ".56789.",
+    "..ABC..",
+    "...D...",
+    ".......",
+};
+
+fn readData(alloc: std.mem.Allocator) !std.array_list.Managed([]u8) {
+    const file = try std.fs.cwd().openFile("data/day02.txt", .{});
     defer file.close();
 
     var buffer: [1024]u8 = undefined;
     var reader = file.reader(&buffer);
 
-    var lines = std.ArrayList([]u8).init(alloc);
+    var lines = std.array_list.Managed([]u8).init(alloc);
 
     while (reader.interface.takeDelimiterInclusive('\n')) |line| {
         const line_no_nl = line[0 .. line.len - 1];
         // Allocate a copy of the line
         const line_copy = try alloc.alloc(u8, line_no_nl.len);
-        std.mem.copy(u8, line_copy, line_no_nl);
+        std.mem.copyForwards(u8, line_copy, line_no_nl);
         try lines.append(line_copy);
     } else |err| switch (err) {
         error.EndOfStream => {},
@@ -86,25 +97,30 @@ fn readData(alloc: std.mem.Allocator) !std.ArrayList([]u8) {
     return lines;
 }
 
+fn getCodeForNumpad(alloc: std.mem.Allocator, numpad: *Numpad, lines: [][]u8) ![]const u8 {
+    var code_buffer = try alloc.alloc(u8, lines.len);
+
+    for (lines, 0..) |line, i| {
+        numpad.moveTo(line);
+        code_buffer[i] = numpad.getCurrPos();
+    }
+    return code_buffer;
+}
+
 pub fn solve() !types.Solution {
     const alloc = std.heap.page_allocator;
-    const all_chars = try readData(alloc);
-    defer all_chars.deinit();
+    const input_lines = try readData(alloc);
+    defer input_lines.deinit();
 
     var numpad = Numpad.init(&keypad_5x5, 2, 2);
-    numpad.moveTo("UUL");
-    std.debug.print("Code: {c}\n", .{numpad.getCurrPos()});
-    numpad.moveTo("RRDDD");
-    std.debug.print("Code: {c}\n", .{numpad.getCurrPos()});
-    numpad.moveTo("LURDL");
-    std.debug.print("Code: {c}\n", .{numpad.getCurrPos()});
-    numpad.moveTo("UUUUD");
-    std.debug.print("Code: {c}\n", .{numpad.getCurrPos()});
+    const code_1 = try getCodeForNumpad(alloc, &numpad, input_lines.items);
 
-    std.debug.print("Read {d} characters:\n{s}\n", .{ all_chars.items.len, all_chars.items });
+    numpad = Numpad.init(&keypad_diamond, 3, 3);
+    const code_2 = try getCodeForNumpad(alloc, &numpad, input_lines.items);
+
     return .{
-        .part1 = .{ .string = "ABC" },
-        .part2 = .{ .number = 0 },
+        .part1 = types.Answer{ .string = code_1 },
+        .part2 = types.Answer{ .string = code_2 },
     };
 }
 
