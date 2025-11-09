@@ -63,26 +63,27 @@ const keypad_5x5 = [_][]const u8{
     ".....",
 };
 
-fn readData(alloc: std.mem.Allocator) !std.array_list.Managed(u8) {
+fn readData(alloc: std.mem.Allocator) !std.ArrayList([]u8) {
     const file = try std.fs.cwd().openFile("data/temp.txt", .{});
     defer file.close();
 
-    // reader
     var buffer: [1024]u8 = undefined;
     var reader = file.reader(&buffer);
 
-    var all_chars = std.array_list.Managed(u8).init(alloc);
+    var lines = std.ArrayList([]u8).init(alloc);
 
     while (reader.interface.takeDelimiterInclusive('\n')) |line| {
         const line_no_nl = line[0 .. line.len - 1];
-        std.debug.print("Line: {s}\n", .{line_no_nl});
-        try all_chars.appendSlice(line_no_nl);
+        // Allocate a copy of the line
+        const line_copy = try alloc.alloc(u8, line_no_nl.len);
+        std.mem.copy(u8, line_copy, line_no_nl);
+        try lines.append(line_copy);
     } else |err| switch (err) {
         error.EndOfStream => {},
         else => return err,
     }
 
-    return all_chars;
+    return lines;
 }
 
 pub fn solve() !types.Solution {
