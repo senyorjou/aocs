@@ -1,24 +1,22 @@
 const std = @import("std");
 const types = @import("types.zig");
 
-const Keypad = [5][5]u8;
+const Keypad = []const []const u8;
 
 const Numpad = struct {
     keypad: Keypad,
-    x: u8,
-    y: u8,
+    width: usize,
+    height: usize,
+    x: usize,
+    y: usize,
 
-    pub fn init() Numpad {
+    pub fn init(keypad: Keypad, start_x: usize, start_y: usize) Numpad {
         return Numpad{
-            .keypad = .{
-                .{ '@', '@', '@', '@', '@' },
-                .{ '@', '1', '2', '3', '@' },
-                .{ '@', '4', '5', '6', '@' },
-                .{ '@', '7', '8', '9', '@' },
-                .{ '@', '@', '@', '@', '@' },
-            },
-            .x = 2,
-            .y = 2,
+            .keypad = keypad,
+            .width = keypad[0].len,
+            .height = keypad.len,
+            .x = start_x,
+            .y = start_y,
         };
     }
 
@@ -33,33 +31,40 @@ const Numpad = struct {
 
             switch (direction) {
                 'U' => {
-                    new_y -|= 1;
+                    if (new_y > 0) new_y -= 1;
                 },
                 'D' => {
-                    new_y +|= 1;
+                    if (new_y + 1 < self.height) new_y += 1;
                 },
                 'L' => {
-                    new_x -|= 1;
+                    if (new_x > 0) new_x -= 1;
                 },
                 'R' => {
-                    new_x +|= 1;
+                    if (new_x + 1 < self.width) new_x += 1;
                 },
                 else => {},
             }
 
-            // Check boundaries and if the new position is a wall
-            if (new_x >= 0 and new_x < 5 and new_y >= 0 and new_y < 5) {
-                if (self.keypad[new_y][new_x] != '@') {
-                    self.x = new_x;
-                    self.y = new_y;
-                }
+            // Check if the new position is a wall
+            if (self.keypad[new_y][new_x] != '.') {
+                self.x = new_x;
+                self.y = new_y;
             }
         }
     }
 };
 
+// 5x5 keypad definition
+const keypad_5x5 = [_][]const u8{
+    ".....",
+    ".123.",
+    ".456.",
+    ".789.",
+    ".....",
+};
+
 fn readData(alloc: std.mem.Allocator) !std.array_list.Managed(u8) {
-    const file = try std.fs.cwd().openFile("data/foo.txt", .{});
+    const file = try std.fs.cwd().openFile("data/temp.txt", .{});
     defer file.close();
 
     // reader
@@ -70,7 +75,7 @@ fn readData(alloc: std.mem.Allocator) !std.array_list.Managed(u8) {
 
     while (reader.interface.takeDelimiterInclusive('\n')) |line| {
         const line_no_nl = line[0 .. line.len - 1];
-
+        std.debug.print("Line: {s}\n", .{line_no_nl});
         try all_chars.appendSlice(line_no_nl);
     } else |err| switch (err) {
         error.EndOfStream => {},
@@ -85,7 +90,7 @@ pub fn solve() !types.Solution {
     const all_chars = try readData(alloc);
     defer all_chars.deinit();
 
-    var numpad = Numpad.init();
+    var numpad = Numpad.init(&keypad_5x5, 2, 2);
     numpad.moveTo("UUL");
     std.debug.print("Code: {c}\n", .{numpad.getCurrPos()});
     numpad.moveTo("RRDDD");
@@ -103,14 +108,14 @@ pub fn solve() !types.Solution {
 }
 
 test "Numpad creation and getCurrPos" {
-    var numpad = Numpad.init();
+    var numpad = Numpad.init(&keypad_5x5, 2, 2);
     try std.testing.expectEqual(numpad.x, 2);
     try std.testing.expectEqual(numpad.y, 2);
     try std.testing.expectEqual(numpad.getCurrPos(), '5');
 }
 
 test "Numpad moveTo functionality" {
-    var numpad = Numpad.init();
+    var numpad = Numpad.init(&keypad_5x5, 2, 2);
 
     // Test valid movements from '5'
     const move_up = [_]u8{'U'};
