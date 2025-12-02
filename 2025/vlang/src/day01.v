@@ -108,8 +108,9 @@ fn run_day01() ! { // Corrected: function now returns a Result type
 
 	println('Advent of Code 2025 - Day 01')
 
-	println('P1: ${count_zeroes(instructions)}')
-	println('P2: ${count_passes(instructions)}')
+	zeroes := count_zeroes(instructions)
+	println('P1: ${zeroes}')
+	println('P2: ${count_passes(instructions) + zeroes}')
 }
 
 
