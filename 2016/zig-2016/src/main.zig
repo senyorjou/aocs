@@ -4,6 +4,7 @@ const types = @import("types.zig");
 const d01 = @import("day01.zig");
 const d02 = @import("day02.zig");
 const d03 = @import("day03.zig");
+const d04 = @import("day04.zig");
 
 fn printSolution(day: u8, result: types.Solution) void {
     std.debug.print("Day {d}:\n", .{day});
@@ -33,7 +34,27 @@ pub fn main() !void {
     }
     printSolution(2, d02_solution);
 
-    printSolution(3, try d03.solve());
+    const d03_solution = try d03.solve();
+    defer {
+        if (d03_solution.part1 == .string) {
+            alloc.free(d03_solution.part1.string);
+        }
+        if (d03_solution.part2 == .string) {
+            alloc.free(d03_solution.part2.string);
+        }
+    }
+    printSolution(3, d03_solution);
+
+    const d04_solution = try d04.solve();
+    defer {
+        if (d04_solution.part1 == .string) {
+            alloc.free(d04_solution.part1.string);
+        }
+        if (d04_solution.part2 == .string) {
+            alloc.free(d04_solution.part2.string);
+        }
+    }
+    printSolution(4, d04_solution);
 }
 
 test "simple test" {
